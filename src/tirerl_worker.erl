@@ -60,14 +60,19 @@ start(Options) when is_list(Options) ->
 stop(ServerRef) ->
     gen_server:call(ServerRef, {stop}, infinity).
 
+-spec get_binary(term()) -> binary().
+get_binary(Value) when is_list(Value) ->
+    list_to_binary(Value);
+get_binary(Value) -> Value.
+
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
 -spec init(tirerl:params()) -> {ok, state()}.
 init(ConnOpts) ->
-    Host = proplists:get_value(host, ConnOpts, ?DEFAULT_HOST),
+    Host = get_binary(proplists:get_value(host, ConnOpts, ?DEFAULT_HOST)),
     Port = proplists:get_value(port, ConnOpts, ?DEFAULT_PORT),
-
+    
     {ok, #{pool_name => undefined,
            connection_options => ConnOpts,
            base_url => <<Host/binary, ":", (integer_to_binary(Port))/binary>>}}.
@@ -113,7 +118,7 @@ code_change(_OldVsn, State, _Extra) ->
 do_request(Req, #{base_url := BaseUrl}) ->
     #{method := Method, uri := Uri} = Req,
     Body = maps:get(body, Req, <<>>),
-    Headers = maps:get(headers, Req, []),
+    Headers = maps:get(headers, Req, [{<<"Content-Type">>, <<"application/json">>}]),
 
     Body1 = case Body of
                 Body when is_binary(Body) -> Body;
