@@ -205,7 +205,8 @@ make_request({indices_stats, Index}) ->
     #{method => get, uri => Uri};
 
 make_request({create_index, Index, Doc}) ->
-    #{method => put, uri => Index, body => Doc};
+    IndexWithParams = make_uri([Index],[{include_type_name, true}]),
+    #{method => put, uri => IndexWithParams, body => Doc};
 
 make_request({delete_index, Index}) ->
     IndexList = join(Index, <<", ">>),
@@ -321,8 +322,10 @@ make_request({clear_cache, Index, Params}) ->
 
 make_request({put_mapping, Indexes, Type, Doc}) ->
     IndexList = join(Indexes, <<", ">>),
+    Uri1 = join([IndexList, ?MAPPING, Type], <<"/">>),
+    Uri = <<Uri1/binary,"?include_type_name=true">>,
     #{method => put,
-      uri => join([IndexList, ?MAPPING, Type], <<"/">>),
+      uri => Uri,
       body => Doc};
 
 make_request({get_mapping, Indexes, Type}) ->
