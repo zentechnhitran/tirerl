@@ -233,8 +233,7 @@ make_request({delete_by_query, Index, Type, Doc, Params}) ->
     #{method => post, uri => Uri, body => Doc};
 
 make_request({is_index, Index}) ->
-    IndexList = join(Index, <<", ">>),
-    #{method => head, uri => IndexList};
+    #{method => put, uri => Index};
 
 make_request({is_type, Index, Type}) ->
     IndexList = join(Index, <<", ">>),
@@ -320,10 +319,10 @@ make_request({clear_cache, Index, Params}) ->
     Uri = make_uri([IndexList, ?CLEAR_CACHE], Params),
     #{method => post, uri => Uri};
 
-make_request({put_mapping, Indexes, Type, Doc}) ->
+make_request({put_mapping, Indexes, _Type, Doc}) ->
     IndexList = join(Indexes, <<", ">>),
-    Uri1 = join([IndexList, ?MAPPING, Type], <<"/">>),
-    Uri = <<Uri1/binary,"?include_type_name=true">>,
+    Uri = join([IndexList, ?MAPPING], <<"/">>),
+		io:format("Uri ~p ~n", [Uri]),
     #{method => put,
       uri => Uri,
       body => Doc};
